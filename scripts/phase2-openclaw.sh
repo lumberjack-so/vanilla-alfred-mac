@@ -35,7 +35,10 @@ if command_exists claude; then
     log_success "Claude CLI already installed"
 else
     log_step "Installing Claude CLI..."
-    npm install -g @anthropic-ai/claude-cli
+    # Claude CLI is installed via its own installer, not npm
+    curl -fsSL https://cli.anthropic.com/install.sh | sh
+    # Add to PATH for this session
+    export PATH="$HOME/.claude/bin:$PATH"
     log_success "Claude CLI installed"
 fi
 
