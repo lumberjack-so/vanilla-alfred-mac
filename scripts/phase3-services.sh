@@ -142,7 +142,7 @@ replace_placeholder "$PLANE_DIR/plane.env" "REDIS_PASSWORD" "$(openssl rand -hex
 cp "$PLANE_DIR/plane.env" "$PLANE_DIR/plane-app/plane.env"
 
 # Start Plane
-docker compose -f docker-compose-hub.yml up -d
+docker compose up -d
 
 # Wait for Plane
 log_step "Waiting for Plane PM..."
