@@ -121,25 +121,18 @@ log_step "Deploying Plane PM..."
 PLANE_DIR="$SERVICES_DIR/plane"
 ensure_dir "$PLANE_DIR"
 
-# Clone Plane repo if needed
-if [[ ! -d "$PLANE_DIR/plane-app" ]]; then
-    log_step "Cloning Plane repository..."
-    git clone https://github.com/makeplane/plane.git "$PLANE_DIR/plane-app" --depth 1 --branch master
-fi
-
-cd "$PLANE_DIR/plane-app"
-
-# Copy .env template
-cp "$REPO_DIR/services/plane/plane.env.template" "$PLANE_DIR/plane.env"
+# Copy bundled docker-compose and env (no git clone needed)
+cp "$REPO_DIR/services/plane/docker-compose.yml" "$PLANE_DIR/docker-compose.yml"
+cp "$REPO_DIR/services/plane/plane.env.template" "$PLANE_DIR/.env"
 
 # Generate secrets
 SECRET_KEY=$(openssl rand -hex 32)
-replace_placeholder "$PLANE_DIR/plane.env" "SECRET_KEY" "$SECRET_KEY"
-replace_placeholder "$PLANE_DIR/plane.env" "DATABASE_PASSWORD" "$(openssl rand -hex 16)"
-replace_placeholder "$PLANE_DIR/plane.env" "REDIS_PASSWORD" "$(openssl rand -hex 16)"
+LIVE_SECRET=$(openssl rand -hex 32)
+replace_placeholder "$PLANE_DIR/.env" "SECRET_KEY" "$SECRET_KEY"
+replace_placeholder "$PLANE_DIR/.env" "DATABASE_PASSWORD" "$(openssl rand -hex 16)"
+replace_placeholder "$PLANE_DIR/.env" "LIVE_SECRET" "$LIVE_SECRET"
 
-# Copy plane.env to deployment location
-cp "$PLANE_DIR/plane.env" "$PLANE_DIR/plane-app/.env"
+cd "$PLANE_DIR"
 
 # Start Plane
 docker compose up -d
