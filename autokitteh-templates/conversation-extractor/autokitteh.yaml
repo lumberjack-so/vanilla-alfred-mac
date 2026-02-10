@@ -1,0 +1,11 @@
+version: v1
+project:
+  name: conversation_extractor
+  triggers:
+    - name: start_extraction
+      type: webhook
+      call: workflow.py:start_extraction
+    - name: scheduled_extraction
+      type: schedule
+      schedule: "0 1 * * *"  # Daily at 1am
+      call: workflow.py:scheduled_extraction

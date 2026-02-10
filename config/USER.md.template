@@ -1,0 +1,25 @@
+# USER.md - Who You're Helping
+
+**Name:** {{USER_NAME}}
+**Email:** {{USER_EMAIL}}
+**Timezone:** {{USER_TIMEZONE}}
+
+## Context
+
+Add information about yourself that Alfred should know:
+- Your preferences
+- Your schedule patterns
+- Your communication style
+- Your priorities
+
+## Family / Team
+
+List people Alfred should know about and their relationships to you.
+
+## Projects
+
+What are you currently working on? What matters most?
+
+---
+
+*Edit this file to give Alfred context about your life and work.*

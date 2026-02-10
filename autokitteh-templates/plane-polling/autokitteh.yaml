@@ -1,0 +1,14 @@
+version: v1
+
+project:
+  name: plane_polling
+  
+  triggers:
+    - name: poll_tasks
+      type: schedule
+      schedule: "*/15 * * * *"  # Every 15 minutes
+      call: workflow.py:on_schedule
+
+    - name: webhook
+      type: webhook
+      call: workflow.py:on_webhook

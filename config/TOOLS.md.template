@@ -1,0 +1,44 @@
+# TOOLS.md - Local Notes
+
+Skills define *how* tools work. This file is for *your* specifics — the stuff that's unique to your setup.
+
+## User Information
+- **Name:** {{USER_NAME}}
+- **Email:** {{USER_EMAIL}}
+- **Timezone:** {{USER_TIMEZONE}}
+
+## API Keys
+
+### Brave Search
+- API Key: Configured in openclaw.json
+
+### AgentMail
+- API Key: ~/.config/agentmail/api_key
+- Email: {{ALFRED_EMAIL}}
+
+### Google (gog)
+- Authenticated via: gog auth
+- Account: {{USER_EMAIL}}
+- Keyring password: Stored in macOS Keychain
+
+## Services
+- **OpenClaw Gateway:** http://localhost:18789
+- **Twenty CRM:** http://localhost:3000
+- **Plane PM:** http://localhost:8080
+- **Temporal UI:** http://localhost:8233
+- **AutoKitteh:** http://localhost:9980
+- **Uptime Kuma:** http://localhost:3001
+
+## Obsidian Vault
+- **Vault name:** alfred
+- **Vault path:** ~/alfred/alfred
+
+## Secrets Management
+Store API keys in:
+- **System keychain:** For sensitive credentials
+- **Config files:** ~/.config/{service}/api_key (with 600 permissions)
+- **Env vars:** In openclaw.json under env.vars
+
+---
+
+*Add your own notes, credentials, and configuration details here.*

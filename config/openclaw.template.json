@@ -1,0 +1,303 @@
+{
+  "env": {
+    "vars": {
+      "BRAVE_API_KEY": "{{BRAVE_API_KEY}}"
+    }
+  },
+  "update": {
+    "channel": "stable",
+    "checkOnStart": true
+  },
+  "browser": {
+    "enabled": true,
+    "evaluateEnabled": true,
+    "headless": true
+  },
+  "ui": {
+    "assistant": {
+      "name": "Alfred"
+    }
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "token"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {}
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5",
+        "fallbacks": [
+          "anthropic/claude-opus-4-5",
+          "anthropic/claude-opus-4-6"
+        ]
+      },
+      "workspace": "{{WORKSPACE_DIR}}",
+      "userTimezone": "{{USER_TIMEZONE}}",
+      "memorySearch": {
+        "enabled": true,
+        "experimental": {
+          "sessionMemory": true
+        },
+        "query": {
+          "hybrid": {
+            "enabled": true
+          }
+        },
+        "cache": {
+          "enabled": true
+        }
+      },
+      "contextPruning": {
+        "mode": "cache-ttl",
+        "ttl": "1h",
+        "keepLastAssistants": 3,
+        "hardClearRatio": 0.5,
+        "minPrunableToolChars": 50000,
+        "hardClear": {
+          "enabled": true,
+          "placeholder": "pruned. check memory for details."
+        }
+      },
+      "compaction": {
+        "mode": "safeguard",
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 15000,
+          "prompt": "Write a detailed conversation summary since the last memory flush to memory/YYYY-MM-DD.md. Include a very specific 'Current Task' breakdown of what you are actively working on to ensure you can pick it back up precisely. If no specific task, indicate idling or maintenance. Reply with NO_REPLY after writing.",
+          "systemPrompt": "Session nearing compaction. Store durable memories now, including your 'Current Task' breakdown."
+        }
+      },
+      "heartbeat": {
+        "every": "3h",
+        "model": "anthropic/claude-opus-4-5",
+        "includeReasoning": true,
+        "target": "none",
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK."
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "alfred",
+        "name": "Alfred",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/alfred/agent",
+        "model": "anthropic/claude-opus-4-6",
+        "subagents": {
+          "allowAgents": [
+            "kb-curator",
+            "ops-guardian",
+            "briefing-butler",
+            "content-agent",
+            "finance-auditor",
+            "coding-agent"
+          ]
+        }
+      },
+      {
+        "id": "ops-guardian",
+        "name": "Ops Guardian",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/ops-guardian/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "kb-curator",
+        "name": "KB Curator",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/kb-curator/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "briefing-butler",
+        "name": "Briefing Butler",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/briefing-butler/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "content-agent",
+        "name": "Content Agent",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/content-agent/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "coding-agent",
+        "name": "Coding Agent",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/coding-agent/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "finance-auditor",
+        "name": "Finance Auditor",
+        "workspace": "{{WORKSPACE_DIR}}",
+        "agentDir": "{{OPENCLAW_CONFIG_DIR}}/agents/finance-auditor/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      }
+    ]
+  },
+  "tools": {
+    "profile": "full",
+    "web": {
+      "search": {
+        "enabled": true,
+        "provider": "brave"
+      },
+      "fetch": {
+        "enabled": true
+      }
+    },
+    "links": {
+      "enabled": true
+    },
+    "agentToAgent": {
+      "enabled": true
+    },
+    "elevated": {
+      "enabled": true
+    },
+    "exec": {
+      "applyPatch": {
+        "enabled": true
+      }
+    }
+  },
+  "media": {
+    "preserveFilenames": true
+  },
+  "messages": {
+    "queue": {
+      "byChannel": {}
+    },
+    "ackReactionScope": "group-mentions",
+    "tts": {
+      "provider": "elevenlabs",
+      "elevenlabs": {
+        "apiKey": "{{ELEVENLABS_API_KEY}}",
+        "voiceId": "{{ELEVENLABS_VOICE_ID}}",
+        "modelId": "{{ELEVENLABS_MODEL}}"
+      }
+    }
+  },
+  "commands": {
+    "native": true,
+    "nativeSkills": true,
+    "config": true,
+    "debug": true,
+    "restart": true
+  },
+  "approvals": {
+    "exec": {
+      "enabled": true
+    }
+  },
+  "session": {
+    "dmScope": "main",
+    "agentToAgent": {
+      "maxPingPongTurns": 5
+    }
+  },
+  "cron": {
+    "enabled": true
+  },
+  "hooks": {
+    "enabled": true,
+    "token": "{{WEBHOOK_TOKEN}}",
+    "transformsDir": "{{OPENCLAW_CONFIG_DIR}}/hooks",
+    "mappings": [
+      {
+        "id": "agentmail-inbox",
+        "match": {
+          "path": "/agentmail"
+        },
+        "action": "wake",
+        "wakeMode": "now",
+        "sessionKey": "agent:alfred:main",
+        "transform": {
+          "module": "email-notify.ts"
+        }
+      }
+    ],
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": {
+          "enabled": true
+        },
+        "command-logger": {
+          "enabled": true
+        },
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "web": {
+    "enabled": true,
+    "heartbeatSeconds": 10
+  },
+  "channels": {},
+  "discovery": {
+    "wideArea": {
+      "enabled": true
+    }
+  },
+  "canvasHost": {
+    "enabled": true,
+    "liveReload": true
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "controlUi": {
+      "enabled": true
+    },
+    "auth": {
+      "mode": "password",
+      "password": "{{GATEWAY_PASSWORD}}",
+      "allowTailscale": true
+    },
+    "tailscale": {
+      "mode": "funnel",
+      "resetOnExit": false
+    },
+    "http": {
+      "endpoints": {
+        "chatCompletions": {
+          "enabled": true
+        },
+        "responses": {
+          "enabled": true,
+          "files": {
+            "allowUrl": true
+          }
+        }
+      }
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    },
+    "entries": {}
+  },
+  "plugins": {
+    "enabled": true,
+    "allow": []
+  }
+}
