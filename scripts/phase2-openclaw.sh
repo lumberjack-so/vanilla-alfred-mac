@@ -82,6 +82,13 @@ fi
 
 cp "$TEMPLATE_FILE" "$CONFIG_FILE"
 
+# Replace placeholders in config
+replace_placeholder "$CONFIG_FILE" "OPENCLAW_CONFIG_DIR" "$OPENCLAW_CONFIG_DIR"
+replace_placeholder "$CONFIG_FILE" "WORKSPACE_DIR" "$WORKSPACE_DIR"
+replace_placeholder "$CONFIG_FILE" "GATEWAY_PASSWORD" "$(openssl rand -hex 24)"
+replace_placeholder "$CONFIG_FILE" "WEBHOOK_TOKEN" "$(openssl rand -hex 16)"
+replace_placeholder "$CONFIG_FILE" "USER_TIMEZONE" "$(date +%Z)"
+
 # 6. Copy workspace files
 log_step "Setting up workspace files..."
 
