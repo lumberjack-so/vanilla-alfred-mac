@@ -175,79 +175,72 @@ log_success "Configuration updated"
 
 # 5. Create TOOLS.md
 log_step "Creating TOOLS.md..."
-cat > "$WORKSPACE_DIR/TOOLS.md" <<EOF
-# TOOLS.md - Local Notes
 
-Skills define *how* tools work. This file is for *your* specifics — the stuff that's unique to your setup.
-
-## User Information
-- **Name:** $USER_NAME
-- **Email:** $USER_EMAIL
-- **Timezone:** $USER_TIMEZONE
-$(if [[ -n "$USER_PHONE" ]]; then echo "- **Phone:** $USER_PHONE"; fi)
-
-## API Keys
-
-### Brave Search
-- API Key: Configured ✓
-
-$(if [[ -n "$ELEVENLABS_API_KEY" ]]; then
-cat <<ELABS
-### ElevenLabs TTS
-- API Key: Configured ✓
-- Voice ID: $ELEVENLABS_VOICE_ID
-- Model: $ELEVENLABS_MODEL
-ELABS
-fi)
-
-$(if [[ -f "$HOME/.config/agentmail/api_key" ]]; then
-cat <<AMAIL
-### AgentMail
-- API Key: Configured ✓
-- Email: $(cat "$WORKSPACE_DIR/USER.md" | grep "Email:" | cut -d: -f2 | xargs)
-AMAIL
-fi)
-
-$(if command -v gog >/dev/null 2>&1; then
-cat <<GOG
-### Google (gog)
-- Configured ✓
-- Account: $USER_EMAIL
-EOF
-
-if [[ -f "$HOME/.config/stripe/api_key" ]]; then
-cat <<STRIPE >> "$WORKSPACE_DIR/TOOLS.md"
-
-### Stripe
-- API Key: Configured ✓
-STRIPE
-fi
-
-if [[ -f "$HOME/.config/huggingface/token" ]]; then
-cat <<HF >> "$WORKSPACE_DIR/TOOLS.md"
-
-### HuggingFace
-- Token: Configured ✓
-HF
-fi
-
-cat >> "$WORKSPACE_DIR/TOOLS.md" <<'EOF'
-
-## Services
-- **Twenty CRM:** http://localhost:3000
-- **Plane PM:** http://localhost:8080
-- **Temporal UI:** http://localhost:8233
-- **AutoKitteh:** http://localhost:9980
-- **Uptime Kuma:** http://localhost:3001
-
-## Obsidian Vault
-- **Vault name:** alfred
-- **Vault path:** ~/alfred/alfred (create this manually)
-
----
-
-*Add your own notes, credentials, and configuration details here.*
-EOF
+{
+    echo "# TOOLS.md - Local Notes"
+    echo ""
+    echo "Skills define *how* tools work. This file is for *your* specifics."
+    echo ""
+    echo "## User Information"
+    echo "- **Name:** $USER_NAME"
+    echo "- **Email:** $USER_EMAIL"
+    echo "- **Timezone:** $USER_TIMEZONE"
+    [[ -n "$USER_PHONE" ]] && echo "- **Phone:** $USER_PHONE"
+    echo ""
+    echo "## API Keys"
+    echo ""
+    echo "### Brave Search"
+    echo "- API Key: Configured ✓"
+    
+    if [[ -n "${ELEVENLABS_API_KEY:-}" ]]; then
+        echo ""
+        echo "### ElevenLabs TTS"
+        echo "- API Key: Configured ✓"
+        echo "- Voice ID: $ELEVENLABS_VOICE_ID"
+        echo "- Model: $ELEVENLABS_MODEL"
+    fi
+    
+    if [[ -f "$HOME/.config/agentmail/api_key" ]]; then
+        echo ""
+        echo "### AgentMail"
+        echo "- API Key: Configured ✓"
+    fi
+    
+    if command -v gog >/dev/null 2>&1; then
+        echo ""
+        echo "### Google (gog)"
+        echo "- Configured ✓"
+        echo "- Account: $USER_EMAIL"
+    fi
+    
+    if [[ -f "$HOME/.config/stripe/api_key" ]]; then
+        echo ""
+        echo "### Stripe"
+        echo "- API Key: Configured ✓"
+    fi
+    
+    if [[ -f "$HOME/.config/huggingface/token" ]]; then
+        echo ""
+        echo "### HuggingFace"
+        echo "- Token: Configured ✓"
+    fi
+    
+    echo ""
+    echo "## Services"
+    echo "- **Twenty CRM:** http://localhost:3000"
+    echo "- **Plane PM:** http://localhost:8080"
+    echo "- **Temporal UI:** http://localhost:8233"
+    echo "- **AutoKitteh:** http://localhost:9980"
+    echo "- **Uptime Kuma:** http://localhost:3001"
+    echo ""
+    echo "## Obsidian Vault"
+    echo "- **Vault name:** alfred"
+    echo "- **Vault path:** ~/alfred/alfred"
+    echo ""
+    echo "---"
+    echo ""
+    echo "*Add your own notes, credentials, and configuration details here.*"
+} > "$WORKSPACE_DIR/TOOLS.md"
 
 log_success "TOOLS.md created"
 
