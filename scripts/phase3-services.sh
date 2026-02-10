@@ -139,7 +139,7 @@ replace_placeholder "$PLANE_DIR/plane.env" "DATABASE_PASSWORD" "$(openssl rand -
 replace_placeholder "$PLANE_DIR/plane.env" "REDIS_PASSWORD" "$(openssl rand -hex 16)"
 
 # Copy plane.env to deployment location
-cp "$PLANE_DIR/plane.env" "$PLANE_DIR/plane-app/plane.env"
+cp "$PLANE_DIR/plane.env" "$PLANE_DIR/plane-app/.env"
 
 # Start Plane
 docker compose up -d
