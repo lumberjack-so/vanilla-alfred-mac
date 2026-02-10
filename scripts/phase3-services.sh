@@ -62,13 +62,8 @@ log_step "Installing AutoKitteh..."
 
 # Install ak CLI
 if ! command_exists ak; then
-    log_step "Installing AutoKitteh CLI..."
-    curl -fsSL https://get.autokitteh.com/install.sh | bash
-    
-    # Add to PATH
-    if [[ -d "$HOME/.autokitteh/bin" ]]; then
-        add_to_path "$HOME/.autokitteh/bin"
-    fi
+    log_step "Installing AutoKitteh CLI via Homebrew..."
+    brew install autokitteh/tap/autokitteh
 fi
 
 # Create AutoKitteh config
