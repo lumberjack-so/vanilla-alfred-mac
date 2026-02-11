@@ -61,9 +61,7 @@ vanilla-alfred-mac/
 │   ├── plane/
 │   │   └── plane.env.template         # Plane environment config
 │   ├── temporal/
-│   │   └── docker-compose.yml         # Temporal + PostgreSQL + UI
-│   ├── autokitteh/
-│   │   └── config.yaml.template       # AutoKitteh configuration
+│   │   └── docker-compose.yml         # Temporal + PostgreSQL + UI + admin-tools
 │   └── uptime-kuma/
 │       └── docker-compose.yml         # (created by installer)
 │
@@ -87,17 +85,27 @@ vanilla-alfred-mac/
 │       ├── event.md
 │       └── learning.md
 │
-├── autokitteh-templates/              # Workflow templates
-│   ├── daily-briefing/
-│   │   ├── autokitteh.yaml
-│   │   └── workflow.py
-│   ├── vault-maintenance/
-│   │   ├── autokitteh.yaml
-│   │   └── workflow.py
-│   ├── integration-health/
-│   │   ├── autokitteh.yaml
-│   │   └── workflow.py
-│   ├── conversation-extractor/
+├── temporal-workflows/                # Temporal Python SDK workflows
+│   ├── config.py                      # Configuration (with placeholders)
+│   ├── activities.py                  # Shared activities
+│   ├── worker.py                      # Worker process
+│   ├── schedules.py                   # Schedule registration
+│   ├── requirements.txt               # Python dependencies
+│   ├── setup-config.sh                # Config replacement script
+│   └── workflows/                     # Workflow definitions
+│       ├── __init__.py
+│       ├── daily_briefing.py
+│       ├── weekly_goals.py
+│       ├── integration_health.py
+│       ├── vault_maintenance.py
+│       ├── content_publishing.py
+│       ├── content_weekly.py
+│       ├── plane_polling.py
+│       └── backlog_handler.py
+│
+├── launchd/                           # macOS service plists
+│   ├── com.openclaw.gateway.plist     # OpenClaw gateway
+│   └── com.alfred.temporal-worker.plist # Temporal worker
 │   ├── plane-polling/
 │   └── (additional templates)
 │
@@ -139,9 +147,9 @@ vanilla-alfred-mac/
 - Deployed to `~/alfred/alfred/` on target
 
 ### Workflows
-- AutoKitteh project templates
-- Python-based, use Temporal
-- Deployed to `~/clawd/autokitteh-projects/`
+- Temporal Python SDK workflows
+- Activities, workers, and schedules
+- Deployed to `~/clawd/temporal-workflows/`
 
 ### Runtime Scripts
 - Copied to `~/clawd/scripts/` on target
@@ -160,8 +168,8 @@ After installation, files are deployed to:
 | `scripts-runtime/*` | `~/clawd/scripts/` |
 | `services/*` | `~/services/` |
 | `vault-template/*` | `~/alfred/alfred/` |
-| `autokitteh-templates/*` | `~/clawd/autokitteh-projects/` |
-| `launchd/*` | `~/Library/LaunchAgents/` (optional) |
+| `temporal-workflows/*` | `~/clawd/temporal-workflows/` |
+| `launchd/*` | `~/Library/LaunchAgents/` |
 | `config/openclaw.template.json` | `~/.openclaw/openclaw.json` |
 
 ## Verification Checklist

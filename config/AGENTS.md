@@ -37,8 +37,8 @@ This ensures visibility even if something crashes mid-execution.
 
 | Layer | MUST USE | NEVER USE |
 |-------|----------|-----------|
-| **Scheduling** | Temporal (via AutoKitteh) | ❌ OpenClaw cron, ❌ system cron, ❌ launchd |
-| **Orchestration** | Python script (AutoKitteh runtime) | ❌ Shell scripts, ❌ Node.js |
+| **Scheduling** | Temporal Schedules (native SDK) | ❌ OpenClaw cron, ❌ system cron, ❌ launchd |
+| **Orchestration** | Python Temporal workflows (`temporalio` SDK) | ❌ Shell scripts, ❌ Node.js |
 | **Intelligence** | OpenClaw `/tools/invoke` → `sessions_spawn` | ❌ Direct Claude API, ❌ Anthropic SDK |
 
 **NO EXCEPTIONS. NO DEVIATIONS.**
@@ -49,18 +49,27 @@ This ensures visibility even if something crashes mid-execution.
 - Automatic retries on failure
 - Single source of truth for all automations
 
-**Skill:** `skills/alfred-workflow/SKILL.md` — Read this EVERY TIME before creating a workflow.
+**Workflow code:** `~/clawd/temporal-workflows/`
+- `worker.py` — Worker process (runs as launchd service)
+- `activities.py` — Shared activities (spawn_agent, run_script, notify_slack, etc.)
+- `workflows/` — One file per workflow domain
+- `schedules.py` — Register/update all Temporal schedules
+- `config.py` — Shared configuration
 
-**Quick create:**
-```bash
-~/clawd/skills/alfred-workflow/scripts/create-workflow.sh {name} "{description}" "{schedule}"
-```
+**To add a new workflow:**
+1. Create workflow class in `workflows/` (use existing patterns)
+2. Import in `worker.py` and add to `ALL_WORKFLOWS`
+3. Add schedule entry in `schedules.py`
+4. Restart worker: `launchctl kickstart -k gui/$(id -u)/com.alfred.temporal-worker`
+5. Re-register schedules: `cd ~/clawd/temporal-workflows && source .venv/bin/activate && python3 schedules.py`
 
 **Services:**
 ```bash
-# Start (in order)
+# Temporal (Docker)
 cd ~/services/temporal && docker compose up -d
-cd ~/services/autokitteh && nohup ak up > ak.log 2>&1 &
+
+# Worker (launchd — auto-starts on boot)
+launchctl kickstart -k gui/$(id -u)/com.alfred.temporal-worker
 ```
 
 ## 📧 Email Handling (Pre-Routed)

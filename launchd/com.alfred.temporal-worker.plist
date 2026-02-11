@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.alfred.temporal-worker</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{WORKFLOWS_DIR}}/.venv/bin/python3</string>
+        <string>worker.py</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>{{WORKFLOWS_DIR}}</string>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    
+    <key>StandardOutPath</key>
+    <string>{{WORKFLOWS_DIR}}/worker.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>{{WORKFLOWS_DIR}}/worker.err</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>

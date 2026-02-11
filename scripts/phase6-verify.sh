@@ -53,7 +53,7 @@ log_section "Services"
 run_check "Docker daemon" "docker info"
 run_check "Temporal (port 7233)" "nc -z localhost 7233"
 run_check "Temporal UI (port 8233)" "nc -z localhost 8233"
-run_check "AutoKitteh (port 9980)" "nc -z localhost 9980"
+run_check "Temporal worker" "pgrep -f 'temporal-workflows.*worker.py'"
 run_check "Twenty CRM (port 3000)" "nc -z localhost 3000"
 run_check "Plane PM (port 8080)" "nc -z localhost 8080"
 run_check "Uptime Kuma (port 3001)" "nc -z localhost 3001"
@@ -173,16 +173,32 @@ else
     ((CHECKS_FAILED++))
 fi
 
-# 11. AutoKitteh projects
+# 11. Temporal workflows
 echo ""
-log_section "AutoKitteh Projects"
-if [[ -d "$WORKSPACE_DIR/autokitteh-projects" ]]; then
-    PROJECT_COUNT=$(find "$WORKSPACE_DIR/autokitteh-projects" -maxdepth 1 -type d | wc -l | xargs)
-    PROJECT_COUNT=$((PROJECT_COUNT - 1))  # Exclude parent dir
-    log_info "Found $PROJECT_COUNT AutoKitteh project templates"
-    ((CHECKS_PASSED++))
+log_section "Temporal Workflows"
+if [[ -d "$WORKSPACE_DIR/temporal-workflows" ]]; then
+    WORKFLOW_COUNT=$(find "$WORKSPACE_DIR/temporal-workflows/workflows" -name "*.py" ! -name "__*" | wc -l | xargs)
+    log_info "Found $WORKFLOW_COUNT Temporal workflow modules"
+    
+    # Check if worker is configured
+    if grep -q "{{GATEWAY_URL}}" "$WORKSPACE_DIR/temporal-workflows/config.py" 2>/dev/null; then
+        log_warning "Temporal workflows not configured (run wizard)"
+        ((CHECKS_FAILED++))
+    else
+        log_success "Temporal workflows configured"
+        ((CHECKS_PASSED++))
+    fi
+    
+    # Check if launchd service is loaded
+    if launchctl list | grep -q "com.alfred.temporal-worker"; then
+        log_success "Temporal worker launchd service loaded"
+        ((CHECKS_PASSED++))
+    else
+        log_warning "Temporal worker launchd service not loaded"
+        ((CHECKS_FAILED++))
+    fi
 else
-    log_warning "No AutoKitteh projects found"
+    log_warning "No Temporal workflows found"
     ((CHECKS_FAILED++))
 fi
 

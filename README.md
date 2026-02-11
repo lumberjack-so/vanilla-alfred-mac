@@ -4,11 +4,11 @@
 
 Takes a **bare metal fresh Mac Mini** (Apple Silicon) from nothing to a fully operational AI butler with:
 - OpenClaw + Claude Sonnet/Opus
-- Twenty CRM, Plane PM, Temporal workflows
+- Twenty CRM, Plane PM
+- Temporal Python SDK workflows (scheduled automations)
 - AgentMail email handling
 - Google Workspace integration
 - Obsidian knowledge vault
-- AutoKitteh automation engine
 - Uptime Kuma monitoring
 
 ## Quick Start
@@ -44,8 +44,8 @@ chmod +x install.sh
 - Workspace structure
 
 ### Phase 3: Services (~15 min)
-- **Temporal** - Workflow orchestration (port 7233)
-- **AutoKitteh** - Automation engine (port 9980)
+- **Temporal** - Workflow orchestration (port 7233, UI on 8233)
+- **Temporal Python Worker** - Scheduled workflows (daily briefings, content publishing, vault maintenance)
 - **Twenty CRM** - Contact management (port 3000)
 - **Plane PM** - Project management (port 8080)
 - **Uptime Kuma** - Monitoring (port 3001)
@@ -140,14 +140,17 @@ docker ps
         ▼                     ▼                     ▼
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
 │   Twenty    │       │    Plane    │       │  Temporal   │
-│     CRM     │       │     PM      │       │  Workflows  │
+│     CRM     │       │     PM      │       │   Server    │
 └─────────────┘       └─────────────┘       └─────────────┘
         │                     │                     │
         └─────────────────────┴─────────────────────┘
                               │
                       ┌───────┴────────┐
-                      │  AutoKitteh    │
-                      │  (Schedules)   │
+                      │ Temporal Worker│
+                      │ (Python SDK)   │
+                      │  - Schedules   │
+                      │  - Activities  │
+                      │  - Workflows   │
                       └────────────────┘
 ```
 
@@ -170,12 +173,21 @@ mkdir -p my-agent/agent
 # Create AGENTS.md with agent instructions
 ```
 
-### Modifying Workflows
+### Modifying Temporal Workflows
 
 ```bash
-cd ~/clawd/autokitteh-projects/
-# Edit existing workflows or create new ones
-ak deploy .
+cd ~/clawd/temporal-workflows/
+
+# Edit existing workflows
+# workflows/*.py - Add/modify workflow logic
+# schedules.py - Add/modify schedules
+
+# Re-register schedules
+source .venv/bin/activate
+python3 schedules.py
+
+# Restart worker
+launchctl kickstart -k gui/$(id -u)/com.alfred.temporal-worker
 ```
 
 ## Troubleshooting
@@ -267,7 +279,13 @@ vanilla-alfred-mac/
 ├── scripts-runtime/            # Deployed runtime scripts
 ├── services/                   # Docker compose files
 ├── vault-template/             # Obsidian vault structure
-└── autokitteh-templates/       # Workflow templates
+├── temporal-workflows/         # Temporal Python workflows
+│   ├── config.py               # Configuration (placeholders)
+│   ├── activities.py           # Shared activities
+│   ├── worker.py               # Worker process
+│   ├── schedules.py            # Schedule registration
+│   └── workflows/              # Workflow definitions
+└── launchd/                    # macOS service plists
 ```
 
 ## Contributing
@@ -287,8 +305,8 @@ MIT License - see LICENSE file
 Built on:
 - [OpenClaw](https://openclaw.sh) - AI agent framework
 - [Claude](https://anthropic.com) - Anthropic's AI models
-- [Temporal](https://temporal.io) - Workflow orchestration
-- [AutoKitteh](https://autokitteh.com) - Automation platform
+- [Temporal](https://temporal.io) - Durable workflow orchestration
+- [Temporal Python SDK](https://docs.temporal.io/dev-guide/python) - Python workflow SDK
 - [Twenty](https://twenty.com) - Open-source CRM
 - [Plane](https://plane.so) - Project management
 

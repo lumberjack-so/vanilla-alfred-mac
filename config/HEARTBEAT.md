@@ -19,7 +19,7 @@ During a heartbeat, the main Alfred agent will:
     If ANY failures are detected:
     - **Docker down:** Restart Docker Desktop (`osascript -e 'quit app "Docker Desktop"'`, wait 5s, `open -a "Docker Desktop"`, wait for daemon)
     - **Temporal containers down:** `cd ~/services/temporal && docker compose up -d`
-    - **AutoKitteh down:** `cd ~/services/autokitteh && nohup ak up > ak.log 2>&1 &`
+    - **Temporal worker down:** `launchctl kickstart -k gui/$(id -u)/com.alfred.temporal-worker`
     - **Google OAuth expired:** Alert your human immediately — requires interactive re-auth (`gog auth <your-email>`)
     - **Log all fixes to #alfred-logs** and notify David if anything critical was down
 2.  **Check for user input or urgent system events.**

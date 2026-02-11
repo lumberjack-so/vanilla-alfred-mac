@@ -18,17 +18,19 @@ if docker ps >/dev/null 2>&1; then
     done
 fi
 
-# 3. AutoKitteh process running
-if ! pgrep -f "ak up" >/dev/null 2>&1 && ! pgrep -f "autokitteh" >/dev/null 2>&1; then
-    FAILURES+=("AutoKitteh not running")
+# 3. Temporal worker running (launchd)
+if ! launchctl list | grep -q "com.alfred.temporal-worker"; then
+    FAILURES+=("Temporal worker not loaded in launchd")
+elif ! pgrep -f "temporal-workflows.*worker.py" >/dev/null 2>&1; then
+    FAILURES+=("Temporal worker process not running")
 fi
 
-# 4. AutoKitteh can reach Temporal (check for recent deadline exceeded errors)
-AK_LOG=~/services/autokitteh/ak.log
-if [ -f "$AK_LOG" ]; then
-    RECENT_ERRORS=$(tail -20 "$AK_LOG" | grep -c "context deadline exceeded" 2>/dev/null)
+# 4. Temporal worker log check (no recent errors)
+WORKER_LOG=~/clawd/temporal-workflows/worker.log
+if [ -f "$WORKER_LOG" ]; then
+    RECENT_ERRORS=$(tail -20 "$WORKER_LOG" | grep -c -E "ERROR|CRITICAL|Exception" 2>/dev/null)
     if [ "$RECENT_ERRORS" -gt 3 ]; then
-        FAILURES+=("AutoKitteh failing to reach Temporal ($RECENT_ERRORS recent deadline errors)")
+        FAILURES+=("Temporal worker showing errors ($RECENT_ERRORS recent issues)")
     fi
 fi
 

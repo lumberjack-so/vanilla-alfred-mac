@@ -20,7 +20,7 @@ Role: Write code, scripts, and technical solutions.
 ## Locations
 - Scripts: ~/clawd/scripts/
 - Skills: ~/clawd/skills/{name}/
-- Workflows: ~/clawd/autokitteh-projects/
+- Workflows: ~/clawd/temporal-workflows/
 
 ## Code Review
 - Check for security issues

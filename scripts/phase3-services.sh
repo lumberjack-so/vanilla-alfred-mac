@@ -1,6 +1,6 @@
 #!/bin/bash
 # Phase 3: Services
-# Deploys: Twenty CRM, Plane PM, Temporal, AutoKitteh, Uptime Kuma
+# Deploys: Twenty CRM, Plane PM, Temporal Workflows, Uptime Kuma
 
 set -euo pipefail
 
@@ -30,7 +30,7 @@ fi
 
 log_success "Docker is ready"
 
-# 1. Temporal + AutoKitteh (shared PostgreSQL)
+# 1. Temporal Workflows
 log_step "Deploying Temporal..."
 
 TEMPORAL_DIR="$SERVICES_DIR/temporal"
@@ -57,36 +57,62 @@ wait_for_port 7233 120 || {
 log_success "Temporal running on :7233"
 log_info "Temporal UI: http://localhost:8233"
 
-# 2. AutoKitteh
-log_step "Installing AutoKitteh..."
+# 2. Temporal Python Workflows
+log_step "Setting up Temporal Python workflows..."
 
-# Install ak CLI
-if ! command_exists ak; then
-    log_step "Installing AutoKitteh CLI via Homebrew..."
-    brew install autokitteh/tap/autokitteh
-fi
+WORKSPACE_DIR="$HOME/clawd"
+WORKFLOWS_DIR="$WORKSPACE_DIR/temporal-workflows"
+ensure_dir "$WORKFLOWS_DIR"
 
-# Create AutoKitteh config
-AUTOKITTEH_DIR="$SERVICES_DIR/autokitteh"
-ensure_dir "$AUTOKITTEH_DIR"
+# Copy workflow files
+cp -R "$REPO_DIR/temporal-workflows/"* "$WORKFLOWS_DIR/"
 
-# Copy config template
-if [[ -f "$REPO_DIR/services/autokitteh/config.yaml.template" ]]; then
-    cp "$REPO_DIR/services/autokitteh/config.yaml.template" "$AUTOKITTEH_DIR/config.yaml"
-fi
+# Create Python venv
+cd "$WORKFLOWS_DIR"
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Start AutoKitteh in background
-cd "$AUTOKITTEH_DIR"
-nohup ak up > ak.log 2>&1 &
-sleep 5
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
 
-# Verify AutoKitteh is running
-if wait_for_port 9980 30; then
-    log_success "AutoKitteh running on :9980"
-else
-    log_warning "AutoKitteh may not have started correctly"
-    log_info "Check logs: $AUTOKITTEH_DIR/ak.log"
-fi
+log_success "Python dependencies installed"
+
+# Configure workflows (replace placeholders)
+# These values will be collected from the wizard in phase 5
+# For now, we'll create a setup script that the wizard will call
+
+cat > "$WORKFLOWS_DIR/setup-config.sh" <<'SETUP_EOF'
+#!/bin/bash
+# Replace placeholders in config.py with actual values
+# Called by the wizard in phase 5
+
+GATEWAY_URL="$1"
+GATEWAY_TOKEN="$2"
+SLACK_LOGS="$3"
+DAVID_DM="$4"
+VAULT_PATH="$5"
+UPTIME_KUMA_URL="$6"
+
+CONFIG_FILE="config.py"
+
+sed -i.bak \
+    -e "s|{{GATEWAY_URL}}|$GATEWAY_URL|g" \
+    -e "s|{{GATEWAY_TOKEN}}|$GATEWAY_TOKEN|g" \
+    -e "s|{{SLACK_LOGS_CHANNEL}}|$SLACK_LOGS|g" \
+    -e "s|{{DAVID_DM_CHANNEL}}|$DAVID_DM|g" \
+    -e "s|{{VAULT_PATH}}|$VAULT_PATH|g" \
+    -e "s|{{UPTIME_KUMA_URL}}|$UPTIME_KUMA_URL|g" \
+    "$CONFIG_FILE"
+
+rm -f "$CONFIG_FILE.bak"
+echo "Configuration updated"
+SETUP_EOF
+
+chmod +x "$WORKFLOWS_DIR/setup-config.sh"
+
+log_info "Configuration setup script created"
+log_info "Will be configured in Phase 5 (wizard)"
 
 # 3. Twenty CRM
 log_step "Deploying Twenty CRM..."
@@ -177,38 +203,18 @@ wait_for_port 3001 60 || {
 }
 log_success "Uptime Kuma running on :3001"
 
-# 6. Create AutoKitteh project directories
-log_step "Setting up AutoKitteh projects..."
-WORKSPACE_DIR="$HOME/clawd"
-ensure_dir "$WORKSPACE_DIR/autokitteh-projects"
-
-# Copy AutoKitteh workflow templates
-for workflow_dir in "$REPO_DIR/autokitteh-templates/"*/; do
-    if [[ ! -d "$workflow_dir" ]]; then
-        continue
-    fi
-    
-    workflow_name=$(basename "$workflow_dir")
-    target_dir="$WORKSPACE_DIR/autokitteh-projects/$workflow_name"
-    
-    ensure_dir "$target_dir"
-    cp -R "$workflow_dir"/* "$target_dir/"
-done
-
-log_success "AutoKitteh project templates copied"
-
 # Summary
 echo ""
 log_section "Services Summary"
 log_info "Temporal: http://localhost:8233 (UI)"
-log_info "AutoKitteh: http://localhost:9980"
 log_info "Twenty CRM: http://localhost:3000"
 log_info "Plane PM: http://localhost:8080"
 log_info "Uptime Kuma: http://localhost:3001"
 
 echo ""
 log_info "Docker containers:"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(temporal|twenty|plane|kuma|autokitteh)" || true
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(temporal|twenty|plane|kuma)" || true
 
 echo ""
 log_success "Phase 3 complete - All services deployed"
+log_info "⚠️  Temporal worker will be configured and started in Phase 5 (wizard)"

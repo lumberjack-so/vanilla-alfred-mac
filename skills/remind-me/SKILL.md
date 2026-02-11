@@ -1,10 +1,13 @@
 # Remind Me - Reminders & Notifications
 
+**⚠️ NOTE:** This skill needs to be rewritten for Temporal Python SDK workflows.  
+The AutoKitteh implementation below is deprecated.
+
 **Purpose:** Schedule reminders and notifications for future times.
 
 ## Usage
 
-Create reminders using AutoKitteh workflows (durable, survives restarts):
+Create reminders using Temporal workflows (durable, survives restarts):
 
 ```python
 import datetime

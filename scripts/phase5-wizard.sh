@@ -310,6 +310,70 @@ else
     log_warning "Alfred's knowledge management features won't work without a vault"
 fi
 
+# 9. Configure Temporal Workflows
+echo ""
+log_section "Temporal Workflows"
+echo ""
+log_info "Temporal workflows enable scheduled automations (briefings, content publishing, etc.)"
+log_info "These workflows need to connect to your OpenClaw gateway"
+echo ""
+
+WORKFLOWS_DIR="$WORKSPACE_DIR/temporal-workflows"
+
+if confirm "Configure Temporal workflows now?" "y"; then
+    # Get gateway configuration
+    prompt "Gateway URL" "http://localhost:18789" GATEWAY_URL
+    prompt_secret "Gateway Bearer Token" GATEWAY_TOKEN
+    
+    # Get Slack channels if Slack is configured
+    if jq -e '.channels.slack.enabled == true' "$CONFIG_FILE" >/dev/null 2>&1; then
+        prompt "Slack #alfred-logs channel ID" "" SLACK_LOGS
+        prompt "Your Slack DM channel ID" "" DAVID_DM
+    else
+        SLACK_LOGS="{{SLACK_LOGS_CHANNEL}}"
+        DAVID_DM="{{DAVID_DM_CHANNEL}}"
+    fi
+    
+    # Vault path
+    VAULT_PATH="${VAULT_DIR:-$HOME/alfred/alfred}"
+    
+    # Uptime Kuma URL
+    UPTIME_KUMA_URL="http://localhost:3001"
+    
+    # Run setup script
+    log_step "Configuring workflows..."
+    cd "$WORKFLOWS_DIR"
+    ./setup-config.sh "$GATEWAY_URL" "$GATEWAY_TOKEN" "$SLACK_LOGS" "$DAVID_DM" "$VAULT_PATH" "$UPTIME_KUMA_URL"
+    
+    # Install launchd plist
+    log_step "Installing Temporal worker launchd service..."
+    PLIST_TEMPLATE="$REPO_DIR/launchd/com.alfred.temporal-worker.plist"
+    PLIST_TARGET="$HOME/Library/LaunchAgents/com.alfred.temporal-worker.plist"
+    
+    # Replace placeholder in plist
+    sed "s|{{WORKFLOWS_DIR}}|$WORKFLOWS_DIR|g" "$PLIST_TEMPLATE" > "$PLIST_TARGET"
+    
+    # Load the service
+    launchctl unload "$PLIST_TARGET" 2>/dev/null || true
+    launchctl load "$PLIST_TARGET"
+    
+    log_success "Temporal worker service installed"
+    
+    # Wait a moment for worker to start
+    sleep 3
+    
+    # Register schedules
+    log_step "Registering workflow schedules..."
+    source "$WORKFLOWS_DIR/.venv/bin/activate"
+    python3 "$WORKFLOWS_DIR/schedules.py"
+    
+    log_success "Temporal workflows configured and running"
+    log_info "View schedules at: http://localhost:8233/schedules"
+else
+    log_info "Skipping Temporal workflows - you can configure them later"
+    log_warning "Scheduled automations won't work until Temporal worker is configured"
+fi
+
 # Summary
 echo ""
 log_section "Configuration Summary"

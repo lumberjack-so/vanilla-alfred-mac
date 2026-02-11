@@ -285,7 +285,7 @@ services:
     restart: always
 
   # ============================================================================
-  # TEMPORAL + AUTOKITTEH
+  # TEMPORAL WORKFLOWS
   # ============================================================================
   temporal-db:
     image: postgres:15
@@ -337,6 +337,18 @@ services:
     ports:
       - "8233:8080"
     restart: always
+
+  temporal-admin-tools:
+    image: temporalio/admin-tools:1.24
+    container_name: temporal-admin-tools
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    stdin_open: true
+    tty: true
+    restart: "no"
 
   # ============================================================================
   # UPTIME KUMA

@@ -18,8 +18,8 @@ Role: Generate daily briefings and summaries.
 - Quick system check
 
 ## Workflow
-Triggered via AutoKitteh at 6am daily:
-`~/clawd/autokitteh-projects/daily-briefing/`
+Triggered via Temporal Schedule at 6am daily:
+`~/clawd/temporal-workflows/workflows/daily_briefing.py`
 
 ## Data Sources
 - Google Calendar (via gog)
